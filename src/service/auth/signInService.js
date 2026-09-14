@@ -27,7 +27,6 @@ exports.reqValidation = (req) => {
 exports.insertUser = async (
   connection,
   email,
-  email_verified,
   name,
   google_sub
 ) => {

@@ -57,6 +57,7 @@ exports.signIn = async (req, res, next) => {
     )
 
     if (!user) {
+
       const insertedUser = await signInService.insertUser(
         connection,
         email,
@@ -64,6 +65,11 @@ exports.signIn = async (req, res, next) => {
         name,
         sub
       )
+
+      if (!insertedUser) {
+        throw new Error('Gagal, silahkan coba lagi atau tunggu beberapa saat!')
+      }
+
     }
 
     return res.status(200).send(

@@ -7,7 +7,7 @@ const cors = require('cors');
 const app = express();
 
 const quranRoute = require('./route/quran/quranRoute.js')
-const authController = require('./route/auth/authRoute.js')
+const authRoute = require('./route/auth/authRoute.js')
 
 const errorResponse = require('./utils/errorResponse.js')
 
@@ -23,7 +23,7 @@ app.use(express.json());
 
 
 app.use("/api/quran", quranRoute);
-app.use("/api/auth", authController);
+app.use("/api/auth", authRoute);
 
 app.use(errorResponse);
 
