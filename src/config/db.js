@@ -2,9 +2,9 @@ const mysql = require('mysql2/promise')
 
 let pool
 
-async function connectDb() {
+function connectDb() {
   if (!pool) {
-    pool = await mysql.createPool(
+    pool = mysql.createPool(
       {
         host: process.env.DB_HOST,
         user: process.env.DB_USER,
