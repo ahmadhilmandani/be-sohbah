@@ -8,6 +8,8 @@ const oAuthGoogleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const mailUtils = require('../../utils/mailUtils.js')
 
+const otpUtils = require('../../utils/otpUtils.js')
+
 const connectDb = require('../../config/db.js')
 
 
@@ -23,10 +25,16 @@ exports.signUp = async (req, res, next) => {
 
     await connection.beginTransaction()
 
+    const otpEmailTemplate = await mailUtils
+      .otpEmailTemplate(
+        otpUtils.generateOtp(),
+        'sohbah'
+      )
+
     const result = await mailService.sendMail(
       'ahmadhilmandani01@gmail.com',
       'hello, there!',
-      mailUtils.otpEmailTemplate(123456, 'sohbah')
+      otpEmailTemplate
     )
 
     await connection.commit()
