@@ -10,6 +10,8 @@ const quranRoute = require('./route/quran/quranRoute.js')
 
 const authRoute = require('./route/auth/authRoute.js')
 
+const otpRoute = require('./route/otp/otpRoute.js')
+
 const errorResponse = require('./utils/errorResponse.js')
 
 app.use(cors({
@@ -23,6 +25,8 @@ app.use(express.json());
 app.use("/api/quran", quranRoute);
 
 app.use("/api/auth", authRoute);
+
+app.use("/api/otp", otpRoute);
 
 app.use(errorResponse);
 

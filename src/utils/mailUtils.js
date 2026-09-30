@@ -2,7 +2,7 @@ const fs = require('fs/promises')
 const path = require('path')
 
 
-async function otpEmailTemplate(otp, appName = "My Application") {
+async function otpEmailTemplate(otp) {
 
   const templatePath = path.join(
     __dirname,

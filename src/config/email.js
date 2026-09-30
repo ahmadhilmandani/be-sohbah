@@ -11,9 +11,6 @@ const transporter = nodemailer.createTransport({
 })
 
 transporter.verify()
-  .then(() => {
-    console.log('SMTP connection OK')
-  })
   .catch((error) => {
     console.error('SMTP connection FAILED')
     console.error(error)
