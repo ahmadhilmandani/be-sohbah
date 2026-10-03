@@ -9,6 +9,7 @@ const otpService = require('../../service/otp/otpService.js');
 const otpRepository = require('../../repository/otp/otpRepository.js');
 const { nowIndonesia } = require('../../utils/datetime/datetimeUtils.js');
 const { OTP_DURATION_MINUTES } = require('../../const/otpDurationMinutes.js');
+const { connection } = require('mongoose');
 
 
 exports.sendOtp = async (req, res, next) => {
@@ -99,5 +100,75 @@ exports.sendOtp = async (req, res, next) => {
 
 }
 
+
+
+exports.verifOtp = async (req, res, next) => {
+
+  let connection
+
+  try {
+
+    const pool = await connectDb()
+
+    connection = await pool.getConnection()
+
+    await connection.beginTransaction()
+
+    const {
+      otp,
+      purpose
+    } = req.body
+
+    if (purpose == 'REGISTER') {
+
+      const { email } = req.body
+      const hashedOtp = otpUtils.hashOtp(otp)
+
+      await otpService.verifyOtpRegister(
+        connection,
+        email,
+        purpose,
+        hashedOtp
+      )
+
+      const result = await otpRepository.setOtpUsed(connection, hashedOtp)
+
+      if (result == null) {
+
+        throw new Error('Gagal Verifikasi OTP')
+
+      }
+
+      await connection.commit()
+
+      return res.status(200).json({
+        success: true,
+        message: 'OTP berhasil diverifikasi',
+        data: result
+      })
+
+
+    }
+    // else if (purpose == 'FORGOT_PASSWORD') {
+
+    // }
+
+  } catch (error) {
+
+    if (connection) {
+      await connection.rollback()
+    }
+
+    next(error)
+
+  } finally {
+
+    if (connection) {
+      connection.release()
+    }
+
+  }
+
+}
 
 

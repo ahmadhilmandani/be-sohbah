@@ -5,6 +5,6 @@ const router = express.Router();
 
 router.post('/send', otpController.sendOtp);
 
-// router.post('verification');
+router.post('/verify', otpController.verifOtp);
 
 module.exports = router;
