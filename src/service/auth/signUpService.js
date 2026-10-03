@@ -1,4 +1,3 @@
-const { connection } = require('mongoose');
 const authRepository = require('../../repository/auth/authRepository.js')
 
 const datetimeUtils = require('../../utils/datetime/datetimeUtils.js')
@@ -6,44 +5,53 @@ const datetimeUtils = require('../../utils/datetime/datetimeUtils.js')
 exports.reqValidation = (req) => {
 
   const requiredReqs = [
-    'token'
+    'email',
+    'password',
+    'name'
   ]
 
   requiredReqs.forEach(val => {
 
     if (
-      !(Object.hasOwn(req, val) == false)
-      || !(req[val] == null)
+      !Object.hasOwn(req, val)
+      || req[val] == null
+      || req[val] === ''
     ) {
-
       throw new Error(`${val} harus diisi`)
-
     }
 
-  });
+  })
+
+}
+
+exports.getUserByEmail = async (
+  connection,
+  email
+) => {
+
+  return await authRepository.getUserByEmail(
+    connection,
+    email
+  )
 
 }
 
 exports.insertUser = async (
   connection,
-  email,
-  name,
-  google_sub
+  data
 ) => {
 
   const createdAt = datetimeUtils.timestampNowSQL()
 
-  const res = await authRepository.insertUser(
+  return await authRepository.insertUser(
     connection,
-    email,
-    1,
-    name,
-    null,
-    google_sub,
-    1,
+    data.email,
+    data.password_hash,
+    data.name,
+    data.google_sub ?? null,
+    data.is_active ?? 1,
     createdAt
   )
 
-  return res
-
 }
+

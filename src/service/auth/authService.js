@@ -1,3 +1,5 @@
+const authRepository = require('../../repository/auth/authRepository.js')
+
 exports.isUserInserted = async (
   connection,
   sub = null,

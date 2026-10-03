@@ -2,6 +2,10 @@ const { OAuth2Client } = require('google-auth-library');
 
 const signInService = require('../../service/auth/signInService.js');
 
+const authService = require('../../service/auth/authService.js');
+
+const signUpService = require('../../service/auth/signUpService.js');
+
 const mailService = require('../../service/mail/mailService.js');
 
 const oAuthGoogleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -25,24 +29,88 @@ exports.signUp = async (req, res, next) => {
 
     await connection.beginTransaction()
 
-    const otpEmailTemplate = await mailUtils
-      .otpEmailTemplate(
-        otpUtils.generateOtp(),
-        'sohbah'
-      )
+    const {
+      email,
+      password,
+      name
+    } = req.body
 
-    const result = await mailService.sendMail(
-      'ahmadhilmandani01@gmail.com',
-      'hello, there!',
-      otpEmailTemplate
+
+    signUpService.reqValidation(req)
+
+
+    const existingUser = await authService.isUserInserted(
+      connection,
+      null,
+      email
+    )
+
+
+    if (existingUser) {
+
+      if (
+        existingUser.password_hash
+        && existingUser.google_sub
+      ) {
+
+        await connection.rollback()
+
+        return res.status(409).json({
+          success: false,
+          message: 'Email sudah terdaftar. Silakan login.'
+        })
+
+      }
+
+      if (
+        !existingUser.password_hash
+        && existingUser.google_sub
+      ) {
+
+        await connection.rollback()
+
+        return res.status(409).json({
+          success: false,
+          message: 'Email sudah terdaftar menggunakan Google. Silakan login dengan Google.'
+        })
+
+      }
+
+      await connection.rollback()
+
+      return res.status(409).json({
+        success: false,
+        message: 'Email sudah terdaftar.'
+      })
+
+    }
+
+    const passwordHash = await bcrypt.hash(
+      password,
+      12
+    )
+
+    const userId = await signUpService.insertUser(
+      connection,
+      {
+        email,
+        password_hash: passwordHash,
+        name,
+        google_sub: null,
+        is_active: 1
+      }
     )
 
     await connection.commit()
 
-    return res.status(200).json({
+    return res.status(201).json({
       success: true,
-      message: 'Email berhasil dikirim',
-      data: result
+      message: 'Registrasi berhasil.',
+      data: {
+        id: userId,
+        email,
+        name
+      }
     })
 
   } catch (error) {
@@ -63,23 +131,6 @@ exports.signUp = async (req, res, next) => {
 
 }
 
-
-exports.sendOtp = (req, res, next) => {
-  try {
-
-  } catch (error) {
-
-  }
-}
-
-
-exports.otpVerification = (req, res, next) => {
-  try {
-
-  } catch (error) {
-
-  }
-}
 
 
 exports.signIn = async (req, res, next) => {
@@ -103,9 +154,10 @@ exports.signIn = async (req, res, next) => {
 
     const { sub, email, name } = ticket.getPayload();
 
-    const user = await signInService.isUserInserted(
+    const user = await authService.isUserInserted(
       connection,
-      sub
+      sub,
+      null
     )
 
     if (!user) {
