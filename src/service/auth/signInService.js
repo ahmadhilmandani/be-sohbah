@@ -46,14 +46,3 @@ exports.insertUser = async (
   return res
 
 }
-
-exports.isUserInserted = async (
-  connection,
-  sub
-) => {
-
-  const res = await authRepository.getUserBySub(connection, sub)
-
-  return res
-
-}
